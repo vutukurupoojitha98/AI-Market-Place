@@ -1,0 +1,144 @@
+{
+  "theme": "hybrid",
+  "typography": {
+    "font_family_headings": "Cabinet Grotesk",
+    "font_family_body": "Satoshi",
+    "cdn_links": [
+      "https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,500,700,400,900&f[]=satoshi@900,700,500,300,400&display=swap"
+    ],
+    "scale": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tighter font-bold",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight font-medium",
+      "h3": "text-xl sm:text-2xl tracking-tight font-medium",
+      "body": "text-base leading-relaxed font-normal",
+      "label": "text-xs tracking-[0.2em] uppercase font-bold text-muted-foreground"
+    }
+  },
+  "colors": {
+    "primary": "#0E7A3E",
+    "accent": "#FF8C00",
+    "text_main": "#1F2937",
+    "background": "#FFFFFF",
+    "css_variables_light": {
+      "--background": "0 0% 100%",
+      "--foreground": "215 28% 17%",
+      "--card": "0 0% 100%",
+      "--card-foreground": "215 28% 17%",
+      "--popover": "0 0% 100%",
+      "--popover-foreground": "215 28% 17%",
+      "--primary": "147 79% 27%",
+      "--primary-foreground": "0 0% 100%",
+      "--secondary": "0 0% 96%",
+      "--secondary-foreground": "147 79% 27%",
+      "--accent": "33 100% 50%",
+      "--accent-foreground": "0 0% 100%",
+      "--muted": "0 0% 96%",
+      "--muted-foreground": "215 16% 47%",
+      "--border": "215 20% 90%",
+      "--input": "215 20% 90%",
+      "--ring": "147 79% 27%",
+      "--radius": "0.25rem"
+    },
+    "css_variables_dark": {
+      "--background": "215 28% 10%",
+      "--foreground": "0 0% 98%",
+      "--card": "215 28% 12%",
+      "--card-foreground": "0 0% 98%",
+      "--popover": "215 28% 12%",
+      "--popover-foreground": "0 0% 98%",
+      "--primary": "147 79% 40%",
+      "--primary-foreground": "0 0% 100%",
+      "--secondary": "215 28% 17%",
+      "--secondary-foreground": "0 0% 98%",
+      "--accent": "33 100% 50%",
+      "--accent-foreground": "0 0% 100%",
+      "--muted": "215 28% 17%",
+      "--muted-foreground": "215 16% 65%",
+      "--border": "215 28% 17%",
+      "--input": "215 28% 17%",
+      "--ring": "147 79% 40%"
+    }
+  },
+  "layouts": {
+    "storefront": {
+      "strategy": "Luxury Restraint & Floating Minimalism",
+      "grid": "Bento Blocks structure with generous negative space. Avoid standard rigid grids. Overlap images with typography slightly for a premium feel.",
+      "hero": "Full bleed or large asymmetrical bento grids for the hero section. Maximum background overlay: bg-black/40. Let the lifestyle image breathe.",
+      "navigation": "Sticky glassmorphism header (backdrop-blur-xl bg-white/70) to ensure content under it is readable while keeping a premium, modern feel.",
+      "product_listing": "Floating minimalist cards: no borders, soft ambient shadow, hover lift (-translate-y-1), crisp image scaling on hover."
+    },
+    "dashboard_admin_seller": {
+      "strategy": "High-Density Data Grid",
+      "grid": "12-column CSS Grid with 24px gutters. Use grid-cols-12 and span cards across 3, 4, 6, or 12 columns depending on widget importance.",
+      "navigation": "Collapsible left sidebar (240px wide). Sticky top bar only for global search, profile, and active filters.",
+      "kpi_strip": "Top real estate reserved for 4 KPI cards. Each card must have a primary number, comparison (vs last month), and a visual trend indicator.",
+      "density": "Tight padding (p-4 or p-6). Compact rows for tables. No blank charts in empty states (always add a CTA)."
+    }
+  },
+  "component_guidelines": {
+    "buttons": "Pill-shaped (rounded-full) or crisp rectangles (rounded-sm) based on section. Orange (#FF8C00) strictly for high-conversion CTAs (Add to Cart, Buy Now). Primary Dark Green (#0E7A3E) for brand actions. Must include explicit hover states and targeted transitions.",
+    "cards": "Storefront: Borderless, floating, generous padding (p-8). Dashboard: 1px subtle border (border-border), flat solid background, no shadow unless hovered.",
+    "inputs": "Shadcn UI standard but heavily customized with our brand ring colors and a subtle border.",
+    "AI_Chatbot": "Floating pill at bottom right. Expanding into a Neumorphic clean chat interface. Do not use generic emoji. Use a minimal 'sparkle' SVG icon."
+  },
+  "visual_enhancers": {
+    "motion": "Use framer-motion for page transitions and staggering list elements. Spring animations preferred over linear eases.",
+    "glassmorphism": "Used strictly on Storefront header and sticky cart drawers. Must have 1px subtle inner border.",
+    "empty_states": "For dashboard: never show an empty widget. Always use an illustration or a clear prompt to action."
+  },
+  "image_urls": {
+    "hero_and_lifestyle": [
+      {
+        "url": "https://images.unsplash.com/photo-1638378545909-d78bd9b4271c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDZ8MHwxfHNlYXJjaHwyfHxmcmVzaCUyMGxlbnRpbHMlMjBncmFpbnMlMjBib3dsfGVufDB8fHx8MTc4Mzk3MTI1NXww&ixlib=rb-4.1.0&q=85",
+        "category": "Hero Background / Banners",
+        "description": "Purple bowl filled with lentils. Great for organic/grocery section hero."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1730766451299-9c019b78562d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDZ8MHwxfHNlYXJjaHwzfHxmcmVzaCUyMGxlbnRpbHMlMjBncmFpbnMlMjBib3dsfGVufDB8fHx8MTc4Mzk3MTI1NXww&ixlib=rb-4.1.0&q=85",
+        "category": "Category Thumbnail",
+        "description": "Wooden bowl with red beans. Use for Pulses/Lentils category."
+      }
+    ],
+    "products": [
+      {
+        "url": "https://images.unsplash.com/photo-1683533698664-12ee473e8c9d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwaW5kaWFuJTIwc25hY2tzJTIwY2hhaXxlbnwwfHx8fDE3ODM5NzEyNTV8MA&ixlib=rb-4.1.0&q=85",
+        "category": "Snacks Category",
+        "description": "Chai and rusk on a plate. Use for snacks category."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1630748662359-40a2105640c7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwzfHxwcmVtaXVtJTIwaW5kaWFuJTIwc25hY2tzJTIwY2hhaXxlbnwwfHx8fDE3ODM5NzEyNTV8MA&ixlib=rb-4.1.0&q=85",
+        "category": "Beverages Category",
+        "description": "Kulhad Chai. Use for beverages/teas."
+      }
+    ],
+    "logistics": [
+      {
+        "url": "https://images.unsplash.com/photo-1543499459-d1460946bdc6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2ODl8MHwxfHNlYXJjaHwzfHxlY29tbWVyY2UlMjBkZWxpdmVyeSUyMHBlcnNvbnxlbnwwfHx8fDE3ODM5NzEyNTV8MA&ixlib=rb-4.1.0&q=85",
+        "category": "Order Tracking / Shipping Info",
+        "description": "Delivery man carrying cardboard boxes."
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Load Cabinet Grotesk and Satoshi fonts via Fontshare CDN in index.html.",
+    "Update tailwind.config.js with the provided CSS variables for colors, ensuring border-radius is set to 0.25rem for a sharp, premium edge.",
+    "Implement a unified Navigation layout with a Sticky glassmorphism header for the storefront.",
+    "Implement Dashboard routes using a collapsible sidebar and dense 12-column bento grids for metrics.",
+    "Ensure the AI Chatbot is an aesthetic floating widget that matches the brand (Dark Green / Orange) rather than a generic template.",
+    "Use @phosphor-icons/react for sharp, premium iconography (run yarn add @phosphor-icons/react).",
+    "Ensure ALL interactive elements and major sections have data-testid attributes (e.g., data-testid='add-to-cart-button').",
+    "Avoid fully transparent backgrounds on headers; always use backdrop-blur with a semi-transparent fill."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Do NOT use default AI slop designs. Avoid generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy and glass-morphism effects.",
+    "You MUST NOT apply universal transition (e.g., transition: all). Target specific properties like opacity, background-color, transform.",
+    "You MUST NOT center align the main app container. Do not add '.App { text-align: center; }' globally.",
+    "Always use modern button styles (pill-shaped or sharp rectangles) with clear hover state interactions.",
+    "NEVER use generic AI emoji characters like 🤖🧠💭. Use sleek SVG icons.",
+    "Use 2-3x more spacing than typical templates to give elements breathing room on the storefront.",
+    "For the dashboard, optimize for high information density (compact rows, concise labels).",
+    "All toasts must use the 'sonner' library.",
+    "Use the provided Unsplash image URLs to populate placeholder content. NEVER use placeholder domain images."
+  ]
+}

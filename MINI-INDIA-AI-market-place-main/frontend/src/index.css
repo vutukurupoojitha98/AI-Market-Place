@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 215 28% 17%;
+  --card: 0 0% 100%;
+  --card-foreground: 215 28% 17%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 215 28% 17%;
+  --primary: 147 79% 27%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 147 79% 27%;
+  --accent: 33 100% 50%;
+  --accent-foreground: 0 0% 100%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 215 16% 47%;
+  --destructive: 0 84% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 215 20% 90%;
+  --input: 215 20% 90%;
+  --ring: 147 79% 27%;
+  --radius: 0.25rem;
+}
+
+.dark {
+  --background: 215 28% 10%;
+  --foreground: 0 0% 98%;
+  --card: 215 28% 12%;
+  --card-foreground: 0 0% 98%;
+  --popover: 215 28% 12%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 147 79% 40%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 215 28% 17%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 33 100% 50%;
+  --accent-foreground: 0 0% 100%;
+  --muted: 215 28% 17%;
+  --muted-foreground: 215 16% 65%;
+  --border: 215 28% 17%;
+  --input: 215 28% 17%;
+  --ring: 147 79% 40%;
+}
+
+* { border-color: hsl(var(--border)); }
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: 'Cabinet Grotesk', 'Satoshi', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.brand-green { color: #0E7A3E; }
+.bg-brand-green { background-color: #0E7A3E; }
+.bg-brand-orange { background-color: #FF8C00; }
+.text-brand-orange { color: #FF8C00; }
+
+.glass {
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.dark .glass {
+  background: rgba(20,25,30,0.75);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.product-card {
+  transition: transform 220ms cubic-bezier(0.2,0.7,0.2,1), box-shadow 220ms ease;
+}
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -20px rgba(14, 122, 62, 0.25);
+}
+
+.product-image {
+  transition: transform 500ms cubic-bezier(0.2,0.7,0.2,1);
+}
+.product-card:hover .product-image { transform: scale(1.05); }
+
+.btn-primary {
+  background-color: #0E7A3E; color: white;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+.btn-primary:hover { background-color: #0a5f30; transform: translateY(-1px); }
+.btn-accent {
+  background-color: #FF8C00; color: white;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+.btn-accent:hover { background-color: #e67e00; transform: translateY(-1px); }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.2,0.7,0.2,1) both; }
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 0px, #e8e8e8 40px, #f0f0f0 80px);
+  background-size: 1000px 100%; animation: shimmer 1.5s infinite linear;
+}
+
+::selection { background: #0E7A3E; color: white; }
+
+.chat-widget {
+  box-shadow: 0 20px 60px -10px rgba(14, 122, 62, 0.35);
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

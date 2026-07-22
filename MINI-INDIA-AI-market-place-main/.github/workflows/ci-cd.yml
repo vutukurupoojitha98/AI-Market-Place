@@ -1,0 +1,88 @@
+name: CI/CD
+
+on:
+  push: {branches: [main]}
+  pull_request: {branches: [main]}
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: ${{ github.repository_owner }}
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: {POSTGRES_DB: test, POSTGRES_USER: test, POSTGRES_PASSWORD: test}
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {java-version: '21', distribution: temurin, cache: maven}
+      - name: Test
+        working-directory: enterprise-scaffold/java-backend
+        run: ./mvnw -B verify
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '20', cache: yarn, cache-dependency-path: frontend/yarn.lock}
+      - working-directory: frontend
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
+
+  docker-build-push:
+    needs: [test-backend, test-frontend]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions: {contents: read, packages: write}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build & push API
+        uses: docker/build-push-action@v5
+        with:
+          context: enterprise-scaffold/java-backend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/minimart-api:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/minimart-api:${{ github.sha }}
+      - name: Build & push web
+        uses: docker/build-push-action@v5
+        with:
+          context: frontend
+          file: enterprise-scaffold/docker/Dockerfile.frontend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/minimart-web:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/minimart-web:${{ github.sha }}
+
+  deploy-prod:
+    needs: docker-build-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-kubectl@v4
+      - name: Configure kubeconfig
+        run: echo "${{ secrets.KUBECONFIG }}" > /tmp/kubeconfig
+      - name: Deploy (Helm)
+        env: {KUBECONFIG: /tmp/kubeconfig}
+        run: |
+          helm upgrade --install minimart enterprise-scaffold/helm/minimart \
+            --namespace minimart --create-namespace \
+            --set image.api.tag=${{ github.sha }} \
+            --set image.web.tag=${{ github.sha }} \
+            --wait --timeout 10m

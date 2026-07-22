@@ -1,0 +1,45 @@
+{
+  "summary": "Comprehensive backend + frontend test of Mini Mart e-commerce MVP (miniindia-next). 39 pytest backend tests covering health, catalog (products/filters/sort/search/pagination/trending/suggest/related), auth (dev-login, /me, logout, cookie session), cart CRUD, wishlist, coupons (WELCOME10, SAVE5, FREESHIP + invalid), reviews, checkout with Stripe adapter + order creation + coupon discount, orders + cross-user 403, RBAC (customer 403 for admin/seller), admin flows (stats, users, orders, coupon upsert), seller flows (dashboard, product CRUD), and AI chat streaming (SSE + delta + done + history persistence). ALL 39 tests PASSED. Frontend UI tested via Playwright: homepage, product catalog, product detail, add-to-cart, cart page (shows subtotal/shipping/total correctly), dev-login flow, wishlist (item persisted), AI chat streaming (visible token-by-token response), admin/seller RBAC gating.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Checkout.jsx",
+        "issue": "Direct URL navigation / hard-refresh to /checkout redirects to /login because useEffect (line 16-20) fires with user=null before fetchMe() in App.js resolves. Cart/Wishlist/Orders do not have this bug because they don't call nav('/login'). Fix: add an 'auth loading' flag in useAuth store or delay redirect until fetchMe settles.",
+        "selector": "/checkout route",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix race condition on /checkout — do not redirect to /login until useAuth.fetchMe() has completed. Suggestion: add `loading` boolean to auth store, set true on init, set false after fetchMe resolves/errors; Checkout should render Loading… while auth.loading, and only redirect if auth.loading===false && !user."
+  ],
+  "critical_code_review_comments": [
+    "server.py is a single 940-line file mixing models, auth, routes, services and seed logic. The docstring mentions clean architecture with models.py / repos.py / services.py but those modules do not exist. Consider splitting for maintainability (models, auth, catalog, cart, checkout, admin, chat routers).",
+    "Cookie set with samesite='none' and secure=True — correct for cross-site preview URL, but locally over http this would fail. Fine for prod.",
+    "Product model created_at is default_factory=datetime; when inserted via seller_create_product, model_dump gives datetime object — insert works via motor but downstream JSON serialisation may fail on GET; server does d['created_at'] = d['created_at'].isoformat() only in seed path, missed in seller_create_product. Fix: normalise created_at in seller_create_product too.",
+    "Order.address is a Pydantic Address; order_doc['address'] = address.model_dump() is set explicitly (good). Same normalisation done for created_at. OK.",
+    "chat_stream uses async generator inside StreamingResponse — good. But the underlying emergentintegrations LlmChat with_model('openai','gpt-4.1') is untested for auth; test passed so key works.",
+    "Frontend: React 401 console errors on public pages are due to /auth/me being called on every page load even for anonymous browsers. Consider suppressing 401 log or handling gracefully in api.js.",
+    "Zustand store does not persist auth to storage, so cookie is source of truth but user state is re-fetched on each hard refresh — okay, but ties into the /checkout race condition."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "100% (39/39)", "frontend": "~95% (all major flows work; one race-condition redirect bug on /checkout direct navigation)"},
+  "test_credentials": "dev-login accepts any email; first user is auto-admin. Testing created many admin_/cust_/logout_/other_ users with @minimart.test suffix. The FIRST user in the DB is the true admin. To create a fresh admin, wipe the users collection then dev-login. /app/memory/test_credentials.md is empty and should be populated by main agent if a deterministic admin is desired.",
+  "seed_data_creation": "None manually created; backend has idempotent seed_data() that seeds 16 products, 6 categories, 6 brands, 3 coupons on startup — verified live.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend fully covered by /app/backend/tests/backend_test.py — safe regression baseline. Frontend: only remaining bug is Checkout redirect race — main agent should fix by gating the redirect on an auth 'loading' flag. Stripe checkout URL was returned successfully but real Stripe redirect was not followed (not required per test brief). AI chat streaming works end-to-end with visible token deltas.",
+  "rca of the issue": "Checkout redirect RCA: On direct URL load of /checkout, App.js and Checkout.jsx mount concurrently. App's useEffect calls fetchMe() (async). Checkout's useEffect runs immediately with user=null (initial zustand state) and executes nav('/login'). By the time fetchMe() resolves and sets user, the router has already navigated to /login. Reproduction: 1) dev-login on /login (works) 2) open new tab and paste /checkout URL — will always land on /login. Mitigation: add loading flag to useAuth."
+}

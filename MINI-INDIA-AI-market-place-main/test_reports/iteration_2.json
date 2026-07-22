@@ -1,0 +1,41 @@
+{
+  "summary": "Validated the three requested user flows against the resynced 980-product catalog. FLOW 1 (category filter + sort): backend + Playwright confirmed cat_ayurveda=205, cat_snacks=192, cat_spices=183, sidebar active-highlight works, sort=price_asc/price_desc/rating all reorder correctly. FLOW 2 (Mira AI RAG chat): SSE streams token-by-token; Mira grounded on catalog and named 'Aashirvaad Chapati Atta 1kg €3.49' and 'Chefs Choice Basmati Rice 1kg €4.59' (the true cheapest basmati); session_id persists (chat/history returns full 4-msg conversation). FLOW 3 (end-to-end Stripe checkout): dev-login + add 2 products (subtotal €91.99) + WELCOME10 (-€9.20 = 10%) + free shipping (>=€50) => total €82.79; POST /api/checkout/create returned 200 with valid Stripe URL 'https://checkout.stripe.com/c/pay/cs_test_...' and order_id; MongoDB order verified: status=pending, payment_status=unpaid, subtotal/discount/shipping/total all correct. Backend pytest: 13/13 PASSED in 12.94s.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Products grid (Spices/Snacks/Ayurveda pages)", "issues": ["Many product tiles render with blank/grey image area — /api/products returns image URLs but a large portion of scraped miniindia.ie CDN images resolve blank in the browser (either broken CDN links, hotlink protection, or empty image field). No.webp placeholders were mapped to a single Unsplash fallback, so at least those show a photo; but real product images that fail to load leave an empty grey box. Cosmetic only; catalog counts and prices are correct."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_three_flows.py",
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_flows.xml"
+  ],
+  "action_items": [
+    "OPTIONAL / cosmetic: fallback broken product images at render time (onError -> NO_IMG_FALLBACK) in ProductCard.jsx so grey empty boxes get replaced with a placeholder — the seeded image URLs from miniindia.ie sometimes 404/hotlink-block in the browser.",
+    "OPTIONAL: The older backend_test.py from iteration_1 still expects 16 products / 6 categories / cat_pulses / cat_readytoeat and will now fail against the resynced 980-product catalog. Either update or delete it; test_three_flows.py is the current authoritative suite for the new catalog."
+  ],
+  "critical_code_review_comments": [
+    "server.py still 950+ lines mixing models/auth/routes/services/seed — split into modules for maintainability (already flagged in iteration_1).",
+    "In list_products the tag search filter uses {\"tags\": {\"$in\": [q.lower()]}} — this only matches exact tag equals lowercased query. For substring queries (e.g. 'chai') the title/description regex path catches it, but the tag branch is effectively dead unless the query is a single lowercased tag. Consider {\"tags\": {\"$regex\": q, \"$options\": \"i\"}} for consistency.",
+    "_catalog_context RAG uses only regex title/description match on the raw user message ('Do you have Aashirvaad atta?') — it happens to hit because 'aashirvaad' is a substring of a product title, but for freeform questions this will often return 0 matches and fall back to the first 6 products globally. Reasonable for MVP but a real embedding-based RAG would materially improve grounding.",
+    "In checkout_create, discount is silently ignored if subtotal < min_order — no error surfaced to the client. Consider returning 400 or at least echoing a 'coupon_ignored: true' flag so the UI can tell the user.",
+    "chat/stream endpoint has no auth or rate-limiting; anyone can DOS the EMERGENT_LLM_KEY. For MVP fine, but add a simple per-IP throttle before production.",
+    "The previously reported /checkout direct-URL race condition (redirects to /login before fetchMe resolves) still exists in Checkout.jsx line 18 — but in the click-through flow (cart -> Proceed to Checkout) it does NOT trigger because user state is already hydrated. Not blocking the tested flow."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_three_flows.py (new)"
+  ],
+  "success_rate": {"backend": "100% (13/13 flow tests)", "frontend": "100% (all 3 flows verified via Playwright)"},
+  "test_credentials": "dev-login accepts any email; used ephemeral testbuyer_<uuid>@miniindia.test each run. First user in DB is admin (existing state).",
+  "seed_data_creation": "None — backend auto-seeds 980 products from /app/backend/miniindia_products.json when marker seed_marker != 'miniindia-scrape-v1'. Marker is present; catalog was not reseeded during this test run.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Authoritative test file for the new 980-product catalog is /app/backend/tests/test_three_flows.py — run this instead of the outdated backend_test.py (which references the old 16-product seed with cat_pulses/cat_readytoeat and will fail). All three product-catalog + AI + checkout flows are green. Only cosmetic issue: some real miniindia.ie CDN images render blank grey in browser; add onError fallback in ProductCard to fully clean up UI.",
+  "rca of the issue": "N/A — no defects found. All 3 requested flows behave as specified."
+}

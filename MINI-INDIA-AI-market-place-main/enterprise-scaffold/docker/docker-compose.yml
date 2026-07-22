@@ -1,0 +1,69 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: minimart
+      POSTGRES_USER: minimart
+      POSTGRES_PASSWORD: minimart
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck: {test: ["CMD","pg_isready","-U","minimart"], interval: 5s, retries: 10}
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    healthcheck: {test: ["CMD","redis-cli","ping"], interval: 5s, retries: 10}
+
+  opensearch:
+    image: opensearchproject/opensearch:2.15.0
+    environment:
+      - discovery.type=single-node
+      - DISABLE_SECURITY_PLUGIN=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports: ["9200:9200"]
+
+  api:
+    build: ../java-backend
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/minimart
+      SPRING_DATASOURCE_USERNAME: minimart
+      SPRING_DATASOURCE_PASSWORD: minimart
+      SPRING_REDIS_HOST: redis
+      OPENSEARCH_URL: http://opensearch:9200
+      JWT_SECRET: change-me-in-prod
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    ports: ["8080:8080"]
+
+  web:
+    build:
+      context: ../../frontend
+      dockerfile: ../enterprise-scaffold/docker/Dockerfile.frontend
+    depends_on: [api]
+    environment:
+      NEXT_PUBLIC_API_URL: http://api:8080
+    ports: ["3000:3000"]
+
+  nginx:
+    image: nginx:1.27-alpine
+    depends_on: [api, web]
+    ports: ["80:80"]
+    volumes: ["./nginx.conf:/etc/nginx/nginx.conf:ro"]
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    ports: ["9090:9090"]
+    volumes: ["./prometheus.yml:/etc/prometheus/prometheus.yml:ro"]
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    ports: ["3001:3000"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+
+volumes:
+  pgdata: {}

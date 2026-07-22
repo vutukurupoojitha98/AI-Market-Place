@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: minimart-web, labels: {app: minimart-web}}
+spec:
+  replicas: 3
+  selector: {matchLabels: {app: minimart-web}}
+  template:
+    metadata: {labels: {app: minimart-web}}
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/minimart/web:latest
+          ports: [{containerPort: 3000}]
+          resources:
+            requests: {cpu: "100m", memory: "256Mi"}
+            limits: {cpu: "500m", memory: "512Mi"}
+          env:
+            - {name: NEXT_PUBLIC_API_URL, value: "https://api.minimart.ie"}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: minimart-web}
+spec:
+  selector: {app: minimart-web}
+  ports: [{port: 80, targetPort: 3000}]
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimart
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-body-size: "25m"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+spec:
+  tls:
+    - hosts: [minimart.ie, api.minimart.ie]
+      secretName: minimart-tls
+  rules:
+    - host: minimart.ie
+      http:
+        paths:
+          - {path: /, pathType: Prefix, backend: {service: {name: minimart-web, port: {number: 80}}}}
+    - host: api.minimart.ie
+      http:
+        paths:
+          - {path: /, pathType: Prefix, backend: {service: {name: minimart-api, port: {number: 80}}}}

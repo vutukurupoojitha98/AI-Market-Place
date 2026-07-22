@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minimart-api
+  labels: {app: minimart-api}
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: {maxSurge: 1, maxUnavailable: 0}
+  selector: {matchLabels: {app: minimart-api}}
+  template:
+    metadata:
+      labels: {app: minimart-api}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/minimart/api:latest
+          ports: [{containerPort: 8080, name: http}]
+          resources:
+            requests: {cpu: "200m", memory: "512Mi"}
+            limits: {cpu: "1", memory: "1Gi"}
+          env:
+            - {name: SPRING_DATASOURCE_URL, valueFrom: {secretKeyRef: {name: minimart-secrets, key: db-url}}}
+            - {name: SPRING_DATASOURCE_USERNAME, valueFrom: {secretKeyRef: {name: minimart-secrets, key: db-user}}}
+            - {name: SPRING_DATASOURCE_PASSWORD, valueFrom: {secretKeyRef: {name: minimart-secrets, key: db-pass}}}
+            - {name: SPRING_REDIS_HOST, value: redis}
+            - {name: JWT_SECRET, valueFrom: {secretKeyRef: {name: minimart-secrets, key: jwt-secret}}}
+            - {name: STRIPE_API_KEY, valueFrom: {secretKeyRef: {name: minimart-secrets, key: stripe-key}}}
+            - {name: OPENAI_API_KEY, valueFrom: {secretKeyRef: {name: minimart-secrets, key: openai-key}}}
+          readinessProbe:
+            httpGet: {path: /actuator/health/readiness, port: 8080}
+            initialDelaySeconds: 15
+          livenessProbe:
+            httpGet: {path: /actuator/health/liveness, port: 8080}
+            initialDelaySeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata: {name: minimart-api}
+spec:
+  selector: {app: minimart-api}
+  ports: [{port: 80, targetPort: 8080}]
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: {name: minimart-api}
+spec:
+  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: minimart-api}
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+    - type: Resource
+      resource: {name: cpu, target: {type: Utilization, averageUtilization: 65}}
+    - type: Resource
+      resource: {name: memory, target: {type: Utilization, averageUtilization: 75}}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: {name: minimart-api}
+spec:
+  minAvailable: 2
+  selector: {matchLabels: {app: minimart-api}}
